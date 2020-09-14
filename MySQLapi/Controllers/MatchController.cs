@@ -21,14 +21,17 @@ namespace MySQLapi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Match>>> GetTopTenMatches(MatchDuration duration)
         {
-            var myMatch = await _context.match.FromSqlRaw(
-                "SELECT * FROM `match`WHERE `match`.`date`>= CAST({0} AS DATE) AND `match`.`date` <= CAST({1} AS DATE) "+
-                "ORDER BY `match`.`score` DESC LIMIT 10;", duration.FromDate, duration.ToDate).ToListAsync();
+            _context.HowManyGamesPlayed();
+            _context.AverageScore();
+            // var myMatch = await _context.match.FromSqlRaw(
+            //     "SELECT * FROM `match`WHERE `match`.`date`>= CAST({0} AS DATE) AND `match`.`date` <= CAST({1} AS DATE) " +
+            //     "ORDER BY `match`.`score` DESC LIMIT 10;", duration.FromDate, duration.ToDate).ToListAsync();
+            var myMatch = await _context.match.Where(x=>x.date >= duration.FromDate & x.date <= duration.ToDate)
+                .OrderByDescending(x => x.score).Take(10).ToListAsync();
             if (myMatch == null)
             {
                 return NotFound();
             }
-
             return myMatch;
         }
 
@@ -36,7 +39,8 @@ namespace MySQLapi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<IEnumerable<Match>>> GetAllMatchesFromPlayer(int id)
         {
-            var myMatch = await _context.match.FromSqlRaw("SELECT * FROM `match` WHERE `match`.`player_id` = {0};",id).ToListAsync();
+            // var myMatch = await _context.match.FromSqlRaw("SELECT * FROM `match` WHERE `match`.`player_id` = {0};", id).ToListAsync();
+            var myMatch = await _context.match.Where(x => x.player_id == id).ToListAsync();
             if (myMatch == null)
             {
                 return NotFound();
@@ -89,7 +93,8 @@ namespace MySQLapi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<IEnumerable<Match>>> DeleteAllPlayerMatch(int id)
         {
-            var myMatches = await _context.match.FromSqlRaw("SELECT * FROM `match` WHERE `match`.`player_id` = {0};",id).ToListAsync();
+            // var myMatches = await _context.match.FromSqlRaw("SELECT * FROM `match` WHERE `match`.`player_id` = {0};", id).ToListAsync();
+            var myMatches = await _context.match.Where(x => x.player_id == id).ToListAsync();
             if (myMatches == null)
             {
                 return NotFound();

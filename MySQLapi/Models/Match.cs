@@ -7,7 +7,7 @@ public class Match
     public int match_id { get; set; }
     public int player_id { get; set; }
     public int level_number { get; set; }
-    public int score { get; set; }
+    public double score { get; set; }
     public DateTime date { get; set; }
 }
 
