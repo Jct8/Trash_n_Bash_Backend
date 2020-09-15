@@ -7,7 +7,7 @@ namespace MongoApi.Models
     public class Match
     {
         public int level_number { get; set; }
-        public int score { get; set; }
+        public double score { get; set; }
         public DateTime date { get; set; }
     }
 

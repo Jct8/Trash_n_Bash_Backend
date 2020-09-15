@@ -37,7 +37,7 @@ namespace MongoApi.Services
             foreach (var item in documents)
             {
                 Match match = new Match();
-                match.score = item["matches"]["score"].ToInt32();
+                match.score = item["matches"]["score"].ToDouble();
                 match.level_number = item["matches"]["level_number"].ToInt32();
                 match.date = item["matches"]["date"].ToUniversalTime();
                 topTenMatches.Add(match);
@@ -83,7 +83,7 @@ namespace MongoApi.Services
                 .Match(filter)
                 .Unwind(x => x.matches)
                 .ToList()
-                .Average(x => x["matches"]["score"].AsInt32);
+                .Average(x => x["matches"]["score"].AsDouble);
             System.Console.WriteLine("Average score over all games is: " + average);
         }
 
