@@ -17,7 +17,7 @@ namespace MongoApi.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Match>> GetTopTenMatches(MatchDuration duration) 
+        public ActionResult<List<TopTenMatch>> GetTopTenMatches(MatchDuration duration) 
         {
             _matchService.HowManyGamesPlayed();
             _matchService.AverageScore();
@@ -43,34 +43,11 @@ namespace MongoApi.Controllers
             return _matchService.CreateMatch(playerId,match);
         }
 
-        // [HttpPut("{id:length(24)}")]
-        // public IActionResult Update(string id, Match math)
-        // {
-        //     // var player = _playerService.Get(id);
-
-        //     // if (player == null)
-        //     // {
-        //     //     return NotFound();
-        //     // }
-
-        //     // _matchService.CreateMatch(id, updatedPlayer);
-
-        //     return NoContent();
-        // }
-
-        // [HttpDelete("{id:length(24)}")]
-        // public IActionResult Delete(string id)
-        // {
-        //     // var match = _matchService.Get(id);
-
-        //     // if (player == null)
-        //     // {
-        //     //     return NotFound();
-        //     // }
-
-        //     // _playerService.Remove(player.Id);
-
-        //     return NoContent();
-        // }
+        
+        [HttpPut("{id:length(2)}")]
+        public ActionResult<List<TopTenMatch>> Put_GetTopTenMatches(string id, MatchDuration duration)
+        {
+            return _matchService.GetTopTenMatches(duration);
+        }
     }
 }

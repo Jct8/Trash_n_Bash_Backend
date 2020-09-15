@@ -19,7 +19,7 @@ namespace MongoApi.Services
             playerList = database.GetCollection<Player>(settings.PlayerCollectionName);
         }
 
-        public List<Match> GetTopTenMatches(MatchDuration duration)
+        public List<TopTenMatch> GetTopTenMatches(MatchDuration duration)
         {
             var filter = Builders<Player>.Filter
                 .Where(x => x.matches.All(m => m.date >= duration.FromDate & m.date <= duration.ToDate));
@@ -33,13 +33,14 @@ namespace MongoApi.Services
                 .Limit(10)
                 .ToList();
 
-            List<Match> topTenMatches = new List<Match>();
+            List<TopTenMatch> topTenMatches = new List<TopTenMatch>();
             foreach (var item in documents)
             {
-                Match match = new Match();
+                TopTenMatch match = new TopTenMatch();
                 match.score = item["matches"]["score"].ToDouble();
                 match.level_number = item["matches"]["level_number"].ToInt32();
                 match.date = item["matches"]["date"].ToUniversalTime();
+                match.player_nickname = item["nickname"].ToString();
                 topTenMatches.Add(match);
             }
             return topTenMatches;
