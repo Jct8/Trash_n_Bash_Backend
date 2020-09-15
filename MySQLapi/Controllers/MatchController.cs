@@ -11,10 +11,12 @@ namespace MySQLapi.Controllers
     public class MatchController : ControllerBase
     {
         private readonly MatchContext _context;
+        private readonly PlayerContext _playerContext;
 
-        public MatchController(MatchContext context)
+        public MatchController(MatchContext context,PlayerContext playerContext)
         {
             _context = context;
+            _playerContext = playerContext;
         }
 
         // GET: api/Matches
@@ -26,7 +28,7 @@ namespace MySQLapi.Controllers
             // var myMatch = await _context.match.FromSqlRaw(
             //     "SELECT * FROM `match`WHERE `match`.`date`>= CAST({0} AS DATE) AND `match`.`date` <= CAST({1} AS DATE) " +
             //     "ORDER BY `match`.`score` DESC LIMIT 10;", duration.FromDate, duration.ToDate).ToListAsync();
-            var myMatch = await _context.match.Where(x=>x.date >= duration.FromDate & x.date <= duration.ToDate)
+            var myMatch = await _context.match.Where(x => x.date >= duration.FromDate & x.date <= duration.ToDate)
                 .OrderByDescending(x => x.score).Take(10).ToListAsync();
             if (myMatch == null)
             {
@@ -51,42 +53,43 @@ namespace MySQLapi.Controllers
 
         // PUT: api/Match/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMatch(int id, Match match)
+        public async Task<ActionResult<IEnumerable<TopTenMatch>>> Put_GetTopTenMatches(int id, MatchDuration duration)
         {
-            if (id != match.match_id)
+            var myMatches = await _context.match.Where(x => x.date >= duration.FromDate & x.date <= duration.ToDate)
+                            .OrderByDescending(x => x.score).Take(10).ToListAsync();
+            if (myMatches == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(match).State = EntityState.Modified;
-
-            try
+            // Create new list with player nick names
+            List<TopTenMatch> returnMatches = new List<TopTenMatch>();
+            foreach (var match in myMatches)
             {
-                await _context.SaveChangesAsync();
+                TopTenMatch newMatch = new TopTenMatch();
+                var player = await _playerContext.player.FindAsync(match.player_id);
+                newMatch.level_number = match.level_number;
+                newMatch.score = match.score;
+                newMatch.date = match.date;
+                newMatch.player_nickname = player.nickname;
+                returnMatches.Add(newMatch);
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!MatchExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return returnMatches;
         }
 
         // POST: api/Match
         [HttpPost]
         public async Task<ActionResult<Match>> Postmatch(Match match)
         {
-            _context.match.Add(match);
+            Match newMatch = new Match();
+            newMatch.level_number = match.level_number;
+            newMatch.score = match.score;
+            newMatch.date = match.date;
+            newMatch.player_id = match.player_id;
+            _context.match.Add(newMatch);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("Getmatch", new { id = match.match_id }, match);
+            return NoContent();
         }
 
         // DELETE: api/Match/5
